@@ -159,14 +159,20 @@ def extract_rets_pos_txn_from_zipline(backtest):
         backtest.index = backtest.index.tz_localize('UTC')
     returns = backtest.returns
     raw_positions = []
+    no_overnight_position = True
     for dt, pos_row in backtest.positions.iteritems():
+        no_overnight_position = no_overnight_position and (not pos_row)
         df = pd.DataFrame(pos_row)
         df.index = [dt] * len(df)
         raw_positions.append(df)
     if not raw_positions:
         raise ValueError("The backtest does not have any positions.")
-    positions = pd.concat(raw_positions)
-    positions = pos.extract_pos(positions, backtest.ending_cash)
+    if no_overnight_position:
+        positions = []
+    else:
+        positions = pd.concat(raw_positions)
+        positions = pos.extract_pos(positions, backtest.ending_cash)
+        
     transactions = txn.make_transaction_frame(backtest.transactions)
     if transactions.index.tzinfo is None:
         transactions.index = transactions.index.tz_localize('utc')
