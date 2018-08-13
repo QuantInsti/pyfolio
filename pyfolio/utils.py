@@ -168,7 +168,7 @@ def extract_rets_pos_txn_from_zipline(backtest):
     if not raw_positions:
         raise ValueError("The backtest does not have any positions.")
     if no_overnight_position:
-        positions = []
+        positions = pd.DataFrame({})
     else:
         positions = pd.concat(raw_positions)
         positions = pos.extract_pos(positions, backtest.ending_cash)
